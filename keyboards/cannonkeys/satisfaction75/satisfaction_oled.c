@@ -18,6 +18,11 @@ __attribute__((weak)) void draw_ui() {
         case OLED_TIME:
             draw_clock();
             break;
+#    ifdef ENABLE_STAT_TRACKING
+        case OLED_STATS:
+            draw_stats();
+            break;
+#    endif
         case OLED_OFF:
             send_command(DISPLAYOFF);
             break;
@@ -265,3 +270,72 @@ void draw_clock() {
 
     send_buffer();
 }
+
+#ifdef ENABLE_STAT_TRACKING
+
+char keycode_char_map[53] = {
+    'a',  'b',  'c',  'd',  'e',  'f',  'g',  'h',  'i',  'j',
+    'k',  'l',  'm',  'n',  'o',  'p',  'q',  'r',  's',  't',
+    'u',  'v',  'w',  'x',  'y',  'z',  '1',  '2',  '3',  '4',
+    '5',  '6',  '7',  '8',  '9',  '0',  '\0', '\0', '\0', '\0',
+    '\0', '-',  '=',  '[',  ']',  '\\', '\0', ';',  '\'', '`',
+    ',',  '.',  '/'};
+
+char keycode_char_map_shifted[53] = {
+    'A',  'B',  'C',  'D',  'E',  'F',  'G',  'H',  'I',  'J',
+    'K',  'L',  'M',  'N',  'O',  'P',  'Q',  'R',  'S',  'T',
+    'U',  'V',  'W',  'X',  'Y',  'Z',  '!',  '@',  '#',  '$',
+    '%',  '^',  '&',  '*',  '(',  ')',  '\0', '\0', '\0', '\0',
+    '\0', '_',  '+',  '{',  '}',  '|', '\0', ':',  '|',  '~',
+    '<',  '>',  '?'};
+
+void draw_stats() {
+    for (uint8_t spot = 0; spot < LEADERBOARD_SIZE; spot++) {
+        // Only draw leaderboard spot if it's not empty
+        if (key_leaderboard[spot] != -1) {
+            // If the keycode is less than 26 (i.e. a letter) we want the shifted version of the char for better readability.
+            char key_str = key_leaderboard[spot] < 26 ? KEYCODE_TO_CHAR_SHIFTED(key_leaderboard[spot]) : KEYCODE_TO_CHAR(key_leaderboard[spot]);
+
+            uint8_t percentage  = key_percentages[key_leaderboard[spot]] * 100;
+            char    perc_str[4] = "";
+            sprintf(perc_str, "%2u%%", percentage);
+
+#    define X_OFFSET        4
+#    define RIGHT_X_OFFSET  52
+#    define BOTTOM_Y_OFFSET 17
+
+            uint8_t x_pos = X_OFFSET + (spot % 2) * RIGHT_X_OFFSET;
+            uint8_t y_pos = (spot > 1) * BOTTOM_Y_OFFSET;
+
+            draw_rect_soft(x_pos, y_pos + (spot > 1), 11, 13, PIXEL_ON, NORM);
+            draw_char(x_pos + 3, y_pos + 4 - (spot <= 1), key_str, PIXEL_ON, PIXEL_ON, 0);
+
+            // Special handling for very first key press. 100% is too wide to print normally so this is kinda kerning it.
+            if (percentage == 100) {
+                draw_char(x_pos + 14, y_pos + 1, '1', PIXEL_ON, NORM, 1);
+                draw_char(x_pos + 20, y_pos + 1, '0', PIXEL_ON, NORM, 1);
+                draw_char(x_pos + 27, y_pos + 1, '0', PIXEL_ON, NORM, 1);
+                draw_char(x_pos + 35, y_pos + 1, '%', PIXEL_ON, NORM, 1);
+            } else {
+                draw_string(x_pos + 15, y_pos + 1, perc_str, PIXEL_ON, NORM, 1);
+            }
+        }
+    }
+
+    // Draw the grid around the leaderboard
+    draw_rect_filled(0, 15, 100, 1, PIXEL_ON, NORM);
+    draw_rect_filled(50, 0, 1, 31, PIXEL_ON, NORM);
+    draw_rect_filled(100, 0, 1, 31, PIXEL_ON, NORM);
+
+    // Draw the key history to the right of the leaderboard
+    for (int8_t i = 8; i >= 0; i--) {
+        char key = key_history[(key_history_head + 1 + i) % 9];
+        if ((int8_t)key != -1) {
+            draw_char(105 + 9 * (i % 3), 1 + 10 * (i / 3), key, PIXEL_ON, PIXEL_ON, 0);
+        }
+    }
+
+    send_buffer();
+}
+
+#endif
