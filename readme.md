@@ -1,4 +1,4 @@
-## Satisfaction 75 Stat Tracker branch
+## Satisfaction 75 Stat Tracker Branch
 ###### This branch includes mofifications to the `keyboards/cannonkeys/satisfaction75` folder adding another OLED mode that shows statistics about key presses as well as a key history. Due to current QMK limitations this could not be contained in a separate keymap and required changes to the original Sat75 code.
 
 ![Sat75Gif](https://media.giphy.com/media/UpIe10chGT3dd3KU4b/giphy.gif)
