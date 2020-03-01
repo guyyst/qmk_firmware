@@ -1,3 +1,7 @@
+## Satisfaction 75 Stat Tracker branch
+###### This branch includes mofifications to the `keyboards/cannonkeys/satisfaction75` folder adding another OLED mode that shows statistics about key presses as well as a key history. Due to current QMK limitations this could not be contained in a separate keymap and required changes to the original Sat75 code.
+
+
 # Quantum Mechanical Keyboard Firmware
 
 [![Current Version](https://img.shields.io/github/tag/qmk/qmk_firmware.svg)](https://github.com/qmk/qmk_firmware/tags)
