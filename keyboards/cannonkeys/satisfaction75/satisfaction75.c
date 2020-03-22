@@ -246,7 +246,16 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 void encoder_update_kb(uint8_t index, bool clockwise) {
     queue_for_send = true;
     if (index == 0) {
-        if (get_mods() & MOD_MASK_CTRL) {
+        if (get_mods() & MOD_MASK_GUI) {
+            // Make Win+Encoder send Win+Plus/Minus
+            if (clockwise) {
+                register_code(KC_KP_PLUS);
+                unregister_code(KC_KP_PLUS);
+            } else {
+                register_code(KC_KP_MINUS);
+                unregister_code(KC_KP_MINUS);
+            }
+        } else if (get_mods() & MOD_MASK_CTRL) {
             if (clockwise) {
                 register_code(KC_Y);
                 unregister_code(KC_Y);
