@@ -1,7 +1,13 @@
-## Satisfaction 75 Stat Tracker Branch
-###### This branch includes modifications to the [`keyboards/cannonkeys/satisfaction75`](https://github.com/guyyst/qmk_firmware/tree/sat75-stat-tracker/keyboards/cannonkeys/satisfaction75) folder adding another OLED mode that shows statistics about key presses as well as a key history. Due to current QMK limitations this could not be contained in a separate keymap and required changes to the original Sat75 code.
+##### This is the branch of my personal Satisfaction 75 configuration.
 
-![Sat75Gif](https://media.giphy.com/media/UpIe10chGT3dd3KU4b/giphy.gif)
+It's forked from [sat75-stat-tracker](https://github.com/guyyst/qmk_firmware/tree/sat75-stat-tracker) and removes all the code I'm not using while adding a bunch of custom stuff.
+
+* Custom keymap for German keys `äöüß` by pressing `Fn + aous`
+* Caps is another Fn key while held down
+* `Fn + Del` will toggle another OLED mode while spamming the delete key to get into BIOS more easily.
+* Pressing `NEXT_TRACK` and `PREV_TRACK` together will instead send `PAUSE_TRACK`
+* `Ctrl + Encoder Turn` will send `Ctrl + z/y`
+* `Win + Esc` will send `Alt + F4`
 
 
 # Quantum Mechanical Keyboard Firmware
