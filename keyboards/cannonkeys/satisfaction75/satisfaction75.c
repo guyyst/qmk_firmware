@@ -78,7 +78,6 @@ uint32_t layer_state_set_kb(uint32_t state) {
     return state;
 }
 
-
 #ifdef ENABLE_STAT_TRACKING
 
 uint32_t key_total_counter;
@@ -216,6 +215,18 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
     queue_for_send = true;
     switch (keycode) {
+        case KC_LEFT:
+        case KC_RIGHT: {
+            if (layer == 1) {
+                
+                register_code(keycode == KC_LEFT ? KC_HOME : KC_END);
+                unregister_code(keycode == KC_LEFT ? KC_HOME : KC_END);
+
+                return false;
+            }
+
+            break;
+        }
         case KC_CAPS:
             if (record->event.pressed) {
                 layer_on(1);
