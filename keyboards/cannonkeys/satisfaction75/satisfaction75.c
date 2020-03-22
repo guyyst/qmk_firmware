@@ -40,6 +40,45 @@ bool    oled_sleeping  = false;
 
 uint16_t delete_timer = 0;
 
+void read_host_led_state(void) {
+    uint8_t leds = host_keyboard_leds();
+    if (leds & (1 << USB_LED_NUM_LOCK)) {
+        if (led_numlock == false) {
+            led_numlock = true;
+        }
+    } else {
+        if (led_numlock == true) {
+            led_numlock = false;
+        }
+    }
+    if (leds & (1 << USB_LED_CAPS_LOCK)) {
+        if (led_capslock == false) {
+            led_capslock = true;
+        }
+    } else {
+        if (led_capslock == true) {
+            led_capslock = false;
+        }
+    }
+    if (leds & (1 << USB_LED_SCROLL_LOCK)) {
+        if (led_scrolllock == false) {
+            led_scrolllock = true;
+        }
+    } else {
+        if (led_scrolllock == true) {
+            led_scrolllock = false;
+        }
+    }
+}
+
+uint32_t layer_state_set_kb(uint32_t state) {
+    state          = layer_state_set_user(state);
+    layer          = biton32(state);
+    queue_for_send = true;
+    return state;
+}
+
+
 #ifdef ENABLE_STAT_TRACKING
 
 uint32_t key_total_counter;
@@ -164,44 +203,6 @@ bool caps_to_shift(uint16_t keycode, keyrecord_t *record) {
     }
 
     return true;
-}
-
-void read_host_led_state(void) {
-    uint8_t leds = host_keyboard_leds();
-    if (leds & (1 << USB_LED_NUM_LOCK)) {
-        if (led_numlock == false) {
-            led_numlock = true;
-        }
-    } else {
-        if (led_numlock == true) {
-            led_numlock = false;
-        }
-    }
-    if (leds & (1 << USB_LED_CAPS_LOCK)) {
-        if (led_capslock == false) {
-            led_capslock = true;
-        }
-    } else {
-        if (led_capslock == true) {
-            led_capslock = false;
-        }
-    }
-    if (leds & (1 << USB_LED_SCROLL_LOCK)) {
-        if (led_scrolllock == false) {
-            led_scrolllock = true;
-        }
-    } else {
-        if (led_scrolllock == true) {
-            led_scrolllock = false;
-        }
-    }
-}
-
-uint32_t layer_state_set_kb(uint32_t state) {
-    state          = layer_state_set_user(state);
-    layer          = biton32(state);
-    queue_for_send = true;
-    return state;
 }
 
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
