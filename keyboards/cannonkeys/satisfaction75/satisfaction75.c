@@ -148,6 +148,24 @@ void tap_media_key(uint16_t keycode) {
     unregister_code16(keycode);
 }
 
+bool caps_to_shift(uint16_t keycode, keyrecord_t *record) {
+    if ((keycode >= KC_1 && keycode <= KC_0) || (keycode >= KC_MINUS && keycode <= KC_SLASH)) {
+        read_host_led_state();
+
+        if (led_capslock == true) {
+            if (record->event.pressed) {
+                register_code16(LSFT(keycode));
+            } else {
+                unregister_code16(LSFT(keycode));
+            }
+
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void read_host_led_state(void) {
     uint8_t leds = host_keyboard_leds();
     if (leds & (1 << USB_LED_NUM_LOCK)) {
@@ -266,6 +284,9 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
         default:
+            if (!caps_to_shift(keycode, record)) {
+                return false;
+            }
             break;
     }
 
@@ -324,7 +345,7 @@ void matrix_scan_kb(void) {
         return;
     }
 
-    if (queue_for_send && oled_mode != OLED_OFF) {
+    if (queue_for_send) {
         oled_sleeping = false;
         read_host_led_state();
         draw_ui();
