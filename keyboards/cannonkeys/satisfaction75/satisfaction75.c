@@ -24,6 +24,8 @@
 uint16_t media_next_track_timer = 0;
 uint16_t media_prev_track_timer = 0;
 
+bool caps_used_as_fn = false;
+
 uint16_t last_flush;
 
 volatile uint8_t led_numlock    = false;
@@ -189,8 +191,24 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     update_key_stats(keycode, record);
 #endif
 
+    if (record->event.pressed) {
+        caps_used_as_fn = true;
+    }
+
     queue_for_send = true;
     switch (keycode) {
+        case KC_CAPS:
+            if (record->event.pressed) {
+                layer_on(1);
+                caps_used_as_fn = false;
+            } else {
+                layer_off(1);
+                if (!caps_used_as_fn) {
+                    register_code(KC_CAPS);
+                    unregister_code(KC_CAPS);
+                }
+            }
+            return false;
         case KC_ESC:
             if (record->event.pressed) {
                 // Make Win+Esc send Alt+F4
@@ -203,11 +221,13 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                     return false;
                 }
 
+#ifdef ENABLE_STAT_TRACKING
                 // Make Fn+Esc reset key history and stats
                 if (layer == 1) {
                     reset_key_stats();
                     return false;
                 }
+#endif
             }
             break;
         case KC_MEDIA_NEXT_TRACK:
@@ -245,16 +265,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 // Do something else when release
             }
             return false;
-#ifdef ENABLE_STAT_TRACKING
-        case KC_ESC:
-            if (record->event.pressed) {
-                if (layer == 1) {
-                    reset_key_stats();
-                    return false;
-                }
-            }
-            break;
-#endif
         default:
             break;
     }
