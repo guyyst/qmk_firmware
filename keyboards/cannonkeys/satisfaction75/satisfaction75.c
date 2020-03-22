@@ -191,6 +191,25 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
     queue_for_send = true;
     switch (keycode) {
+        case KC_ESC:
+            if (record->event.pressed) {
+                // Make Win+Esc send Alt+F4
+                if (get_mods() & MOD_MASK_GUI) {
+                    register_code(KC_LALT);
+                    del_mods(MOD_MASK_GUI);
+                    register_code(KC_F4);
+                    unregister_code(KC_F4);
+                    unregister_code(KC_LALT);
+                    return false;
+                }
+
+                // Make Fn+Esc reset key history and stats
+                if (layer == 1) {
+                    reset_key_stats();
+                    return false;
+                }
+            }
+            break;
         case KC_MEDIA_NEXT_TRACK:
             if (record->event.pressed) {
                 media_next_track_timer = timer_read();
