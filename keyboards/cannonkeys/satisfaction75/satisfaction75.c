@@ -19,6 +19,11 @@
 /* Artificial delay added to get media keys to work in the encoder*/
 #define MEDIA_KEY_DELAY 10
 
+/* In milliseconds, how close together next_track and prev_track need to be pressed to send pause_track instead */
+#define MEDIA_KEY_PAUSE_TIMEOUT 140
+uint16_t media_next_track_timer = 0;
+uint16_t media_prev_track_timer = 0;
+
 uint16_t last_flush;
 
 volatile uint8_t led_numlock    = false;
@@ -132,6 +137,15 @@ void toggle_delete_spam(void) {
     }
 }
 
+void tap_media_key(uint16_t keycode) {
+    uint16_t held_keycode_timer = timer_read();
+    register_code16(keycode);
+    while (timer_elapsed(held_keycode_timer) < MEDIA_KEY_DELAY) {
+        /* no-op */
+    }
+    unregister_code16(keycode);
+}
+
 void read_host_led_state(void) {
     uint8_t leds = host_keyboard_leds();
     if (leds & (1 << USB_LED_NUM_LOCK)) {
@@ -177,6 +191,22 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
     queue_for_send = true;
     switch (keycode) {
+        case KC_MEDIA_NEXT_TRACK:
+            if (record->event.pressed) {
+                media_next_track_timer = timer_read();
+            } else if (media_next_track_timer != 0) {
+                media_next_track_timer = 0;
+                tap_media_key(KC_MEDIA_NEXT_TRACK);
+            }
+            return false;
+        case KC_MEDIA_PREV_TRACK:
+            if (record->event.pressed) {
+                media_prev_track_timer = timer_read();
+            } else if (media_prev_track_timer != 0) {
+                media_prev_track_timer = 0;
+                tap_media_key(KC_MEDIA_PREV_TRACK);
+            }
+            return false;
         case KC_DELETE: {
             if (layer == 1 && record->event.pressed) {
                 toggle_delete_spam();
@@ -191,11 +221,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             return false;
         case ENC_PRESS:
             if (record->event.pressed) {
-                uint16_t held_keycode_timer = timer_read();
-                register_code16(KC_MUTE);
-                while (timer_elapsed(held_keycode_timer) < MEDIA_KEY_DELAY) { /* no-op */
-                }
-                unregister_code16(KC_MUTE);
+                tap_media_key(KC_MUTE);
             } else {
                 // Do something else when release
             }
@@ -221,18 +247,10 @@ void encoder_update_kb(uint8_t index, bool clockwise) {
     queue_for_send = true;
     if (index == 0) {
         if (layer == 0) {
-            uint16_t mapped_code = 0;
             if (clockwise) {
-                mapped_code = KC_VOLU;
+                tap_media_key(KC_VOLU);
             } else {
-                mapped_code = KC_VOLD;
-            }
-            uint16_t held_keycode_timer = timer_read();
-            if (mapped_code != 0) {
-                register_code16(mapped_code);
-                while (timer_elapsed(held_keycode_timer) < MEDIA_KEY_DELAY) { /* no-op */
-                }
-                unregister_code16(mapped_code);
+                tap_media_key(KC_VOLD);
             }
         }
     }
@@ -266,8 +284,16 @@ void matrix_scan_kb(void) {
         draw_ui();
         queue_for_send = false;
     }
+
     if (timer_elapsed(last_flush) > ScreenOffInterval && !oled_sleeping) {
         send_command(DISPLAYOFF); /* 0xAE */
         oled_sleeping = true;
+    }
+
+    // If both next_track and prev_track have been pressed in the last milliseconds, send pause_track instead.
+    if (media_next_track_timer != 0 && media_prev_track_timer != 0 && timer_elapsed(media_next_track_timer) < MEDIA_KEY_PAUSE_TIMEOUT && timer_elapsed(media_prev_track_timer) < MEDIA_KEY_PAUSE_TIMEOUT) {
+        tap_media_key(KC_MEDIA_PLAY_PAUSE);
+        media_next_track_timer = 0;
+        media_prev_track_timer = 0;
     }
 }
