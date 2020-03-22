@@ -9,7 +9,7 @@
 // Start these at the USER code range in VIA
 enum my_keycodes { ENC_PRESS = 0x5F80, OLED_TOGG };
 
-enum oled_modes { OLED_DEFAULT, OLED_STATS, OLED_OFF, _NUM_OLED_MODES };
+enum oled_modes { OLED_DEFAULT, OLED_STATS, OLED_OFF, _NUM_OLED_MODES, OLED_DELETE };
 
 // Keyboard Information
 extern volatile uint8_t led_numlock;
@@ -27,6 +27,12 @@ __attribute__((weak)) void draw_ui(void);
 void                       draw_default(void);
 void                       draw_encoder(int8_t startX, int8_t startY, bool show_legend);
 void                       draw_stats(void);
+void                       draw_delete(void);
+
+// Timer for spamming delete
+extern uint16_t delete_timer;
+#define DELETE_SPAM_TIME 200
+#define DELETE_FLASH_INTERVAL 2
 
 // Key stat and history tracking.
 #ifdef ENABLE_STAT_TRACKING

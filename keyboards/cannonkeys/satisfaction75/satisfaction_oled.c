@@ -15,6 +15,9 @@ __attribute__((weak)) void draw_ui() {
             draw_stats();
             break;
 #endif
+        case OLED_DELETE:
+            draw_delete();
+            break;
         case OLED_OFF:
             send_command(DISPLAYOFF);
             break;
@@ -113,6 +116,20 @@ void draw_encoder(int8_t startX, int8_t startY, bool show_legend) {
     char *mode_string = "";
     mode_string       = "VOL";
     draw_string(startX + 24, startY + 2, mode_string, PIXEL_ON, XOR, 0);
+}
+
+static uint8_t delete_flash_counter = 0;
+void           draw_delete() {
+    ++delete_flash_counter;
+
+    if (delete_flash_counter <= DELETE_FLASH_INTERVAL) {
+        draw_string(36, 12, "DELETE", PIXEL_ON, NORM, 1);
+        send_buffer();
+    } else if (delete_flash_counter <= DELETE_FLASH_INTERVAL * 2) {
+        send_command(DISPLAYOFF);
+    } else {
+        delete_flash_counter = 0;
+    }
 }
 
 #ifdef ENABLE_STAT_TRACKING

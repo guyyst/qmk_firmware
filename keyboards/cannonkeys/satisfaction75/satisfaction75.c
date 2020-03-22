@@ -31,6 +31,8 @@ bool    queue_for_send = false;
 uint8_t oled_mode      = OLED_DEFAULT;
 bool    oled_sleeping  = false;
 
+uint16_t delete_timer = 0;
+
 #ifdef ENABLE_STAT_TRACKING
 
 uint32_t key_total_counter;
@@ -120,6 +122,16 @@ static inline void update_key_stats(uint16_t keycode, keyrecord_t *record) {
 
 #endif
 
+void toggle_delete_spam(void) {
+    if (delete_timer == 0) {
+        delete_timer = timer_read();
+        oled_mode    = OLED_DELETE;
+    } else {
+        delete_timer = 0;
+        oled_mode    = OLED_DEFAULT;
+    }
+}
+
 void read_host_led_state(void) {
     uint8_t leds = host_keyboard_leds();
     if (leds & (1 << USB_LED_NUM_LOCK)) {
@@ -165,6 +177,12 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
     queue_for_send = true;
     switch (keycode) {
+        case KC_DELETE: {
+            if (layer == 1 && record->event.pressed) {
+                toggle_delete_spam();
+                return false;
+            }
+        } break;
         case OLED_TOGG:
             if (record->event.pressed && oled_mode < _NUM_OLED_MODES) {
                 oled_mode = (oled_mode + 1) % _NUM_OLED_MODES;
@@ -175,7 +193,8 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             if (record->event.pressed) {
                 uint16_t held_keycode_timer = timer_read();
                 register_code16(KC_MUTE);
-                while (timer_elapsed(held_keycode_timer) < MEDIA_KEY_DELAY) { /* no-op */ }
+                while (timer_elapsed(held_keycode_timer) < MEDIA_KEY_DELAY) { /* no-op */
+                }
                 unregister_code16(KC_MUTE);
             } else {
                 // Do something else when release
@@ -229,6 +248,18 @@ void matrix_init_kb(void) {
 }
 
 void matrix_scan_kb(void) {
+    if (delete_timer != 0) {
+        if (timer_elapsed(delete_timer) > DELETE_SPAM_TIME) {
+            register_code(KC_DELETE);
+            unregister_code(KC_DELETE);
+
+            delete_timer = timer_read();
+            draw_ui();
+        }
+
+        return;
+    }
+
     if (queue_for_send && oled_mode != OLED_OFF) {
         oled_sleeping = false;
         read_host_led_state();
