@@ -6,9 +6,7 @@ BOARD = ST_STM32F072B_DISCOVERY
 #   comment out to disable the options.
 #
 
-SRC += led.c \
-      satisfaction_encoder.c \
-      satisfaction_oled.c
+SRC += satisfaction_oled.c
 
 #BOOTMAGIC_ENABLE = yes	# Virtual DIP switch configuration
 MOUSEKEY_ENABLE = yes	# Mouse keys
@@ -20,7 +18,6 @@ NKRO_ENABLE = yes	    # USB Nkey Rollover
 CUSTOM_MATRIX = no # Custom matrix file
 ENCODER_ENABLE = yes
 QWIIC_ENABLE += MICRO_OLED
-#BACKLIGHT_ENABLE = yes
 
 DEFAULT_FOLDER = cannonkeys/satisfaction75/rev1
 
