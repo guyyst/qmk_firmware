@@ -246,7 +246,15 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 void encoder_update_kb(uint8_t index, bool clockwise) {
     queue_for_send = true;
     if (index == 0) {
-        if (layer == 0) {
+        if (get_mods() & MOD_MASK_CTRL) {
+            if (clockwise) {
+                register_code(KC_Y);
+                unregister_code(KC_Y);
+            } else {
+                register_code(KC_Z);
+                unregister_code(KC_Z);
+            }
+        } else if (layer == 0) {
             if (clockwise) {
                 tap_media_key(KC_VOLU);
             } else {
