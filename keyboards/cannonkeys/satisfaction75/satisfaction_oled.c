@@ -140,117 +140,90 @@ void           draw_delete() {
 
 #ifdef ENABLE_SNAKE_MODE
 
-#    define SNAKE_STEP_TIME 100
+#    define SNAKE_STEP_TIME 80
 uint16_t snake_step_timer = 0;
 
-#    define WIDTH 128
-#    define HEIGHT 32
-#    define PIXEL_ARRAY_SIZE (WIDTH * HEIGHT / 8)
-
-// 512 byte array to store 4096 bits (pixels) total.
-uint8_t snake_pixel_array[PIXEL_ARRAY_SIZE];
+#    define GAME_WIDTH 64
+#    define GAME_HEIGHT 16
+#    define GAME_SIZE (GAME_WIDTH * GAME_HEIGHT)
 
 typedef struct {
     uint8_t x;
     uint8_t y;
 } GamePos;
 
-GamePos snake_head_pos;
 GamePos food_pos;
+
+GamePos snake_links[GAME_SIZE];
+uint16_t num_snake_links = 0;
 
 int8_t current_snake_direction = UP;
 int8_t desired_snake_direction = 0;
 
-bool get_pixel_state(uint8_t x, uint8_t y) {
-    uint16_t pixel_pos = y * WIDTH + x;
-
-    uint16_t byte_pos = pixel_pos / 8;
-    uint8_t  bit_pos  = 7 - (pixel_pos % 8);
-
-    return snake_pixel_array[byte_pos] & (1 << bit_pos);
-}
-
-void set_pixel_state(uint8_t x, uint8_t y, bool state) {
-    uint16_t pixel_pos = y * WIDTH + x;
-
-    uint16_t byte_pos = pixel_pos / 8;
-    uint8_t  bit_pos  = 7 - (pixel_pos % 8);
-
-    if (state) {
-        snake_pixel_array[byte_pos] |= (1 << bit_pos);
-    } else {
-        snake_pixel_array[byte_pos] &= ~(1 << bit_pos);
-    }
-}
-
-void draw_pixel_array(void) {
-    for (uint8_t row = 0; row < HEIGHT; row++) {
-        for (uint8_t col = 0; col < WIDTH; col++) {
-            if (get_pixel_state(col, row)) {
-                draw_pixel(col, row, PIXEL_ON, NORM);
-            }
+bool is_pos_snake(GamePos pos) {
+    
+    for (size_t i = 0; i < num_snake_links; i++) {
+        if (snake_links[i].x == pos.x && snake_links[i].y == pos.y) {
+            return true;
         }
     }
+    
+    return false;
 }
 
-GamePos get_rand_pos(void) {
+void draw_game(void) {
+    draw_rect(food_pos.x * 2, food_pos.y * 2, 2, 2, PIXEL_ON, NORM);
+        
+    for (size_t i = 0; i < num_snake_links; i++) {
+        draw_rect(snake_links[i].x * 2, snake_links[i].y * 2, 2, 2, PIXEL_ON, NORM);
+    }
+}
+
+GamePos get_rand_free_pos(void) {
     GamePos rand_pos;
-    rand_pos.x = timer_read() % 128;
-    rand_pos.y = timer_read() % 32;
+    
+    do
+    {
+        rand_pos.x = timer_read() % GAME_WIDTH;
+        rand_pos.y = timer_read() % GAME_HEIGHT;
+    } while (is_pos_snake(rand_pos));
+    
     return rand_pos;
 }
 
 GamePos get_rel_pos(GamePos pos, int8_t dir) {
     switch (dir) {
         case UP:
-            pos.y = (pos.y - 1 + 32) % 32;
+            pos.y = (pos.y - 1 + GAME_HEIGHT) % GAME_HEIGHT;
             break;
         case DOWN:
-            pos.y = (pos.y + 1) % 32;
+            pos.y = (pos.y + 1) % GAME_HEIGHT;
             break;
         case LEFT:
-            pos.x = (pos.x - 1 + 128) % 128;
+            pos.x = (pos.x - 1 + GAME_WIDTH) % GAME_WIDTH;
             break;
         case RIGHT:
-            pos.x = (pos.x + 1) % 128;
+            pos.x = (pos.x + 1) % GAME_WIDTH;
             break;
     }
     
     return pos;
 }
 
+void add_snake_link(GamePos pos) {
+    snake_links[num_snake_links] = pos;
+    num_snake_links++;
+}
+
 void spawn_food(void) {
-    food_pos = get_rand_pos();
-    food_pos.x = 10;
-    food_pos.y = 10;
-    set_pixel_state(food_pos.x, food_pos.y, true);
+    food_pos = get_rand_free_pos();
 }
 
 void draw_snake() {
-    // // snake_pixel_array[0] = 1 << 7;
-
-    // // snake_pixel_array[0] = 0xFF;
-    // set_pixel_state(0, 0, true);
-    // set_pixel_state(15, 15, true);
-    // set_pixel_state(18, 18, true);
-    // set_pixel_state(127, 31, true);
-
-    // // for (uint16_t x = 0; x < 128; x++) {
-    // //     set_pixel_state(x, 0, true);
-    // // }
-
-    // // for (uint16_t x = 0; x < WIDTH; x++) {
-    // //     if (get_pixel_state(x, 0)) {
-    // //         draw_pixel(x, 0, PIXEL_ON, NORM);
-    // //     }
-    // // }
-
     if (snake_step_timer == 0) {
         snake_step_timer = timer_read();
         
-        snake_head_pos = get_rand_pos();
-        set_pixel_state(snake_head_pos.x, snake_head_pos.y, true);
-        
+        add_snake_link(get_rand_free_pos());
         spawn_food();
     }
 
@@ -264,23 +237,26 @@ void draw_snake() {
     if (timer_elapsed(snake_step_timer) > SNAKE_STEP_TIME) {
         snake_step_timer = timer_read();
 
-        GamePos next_pos = get_rel_pos(snake_head_pos, current_snake_direction);
+        GamePos next_pos = get_rel_pos(snake_links[0], current_snake_direction);
         
-        if (next_pos.x == food_pos.x && next_pos.y == food_pos.y) {
-            // set_pixel_state(food_pos.x, food_pos.y, false);
+        bool ate_food = (next_pos.x == food_pos.x && next_pos.y == food_pos.y);
+        
+        if (ate_food) {
+            num_snake_links++;
+        }
+        
+        for (size_t i = num_snake_links - 1; i > 0; i--) {
+            snake_links[i] = snake_links[i - 1];
+        }
+        
+        snake_links[0] = next_pos;
+        
+        if (ate_food) {
             spawn_food();
         }
-        //  else {
-        //     if (get_pixel_state(next_pos))
-        // }
-        
-        set_pixel_state(snake_head_pos.x, snake_head_pos.y, false);
-        set_pixel_state(next_pos.x, next_pos.y, true);
-        
-        snake_head_pos = next_pos;
     }
 
-    draw_pixel_array();
+    draw_game();
 
     send_buffer();
 }
