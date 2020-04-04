@@ -9,7 +9,7 @@
 // Start these at the USER code range in VIA
 enum my_keycodes { ENC_PRESS = 0x5F80, OLED_TOGG };
 
-enum oled_modes { OLED_DEFAULT, OLED_STATS, OLED_OFF, _NUM_OLED_MODES, OLED_DELETE };
+enum oled_modes { OLED_DEFAULT, OLED_STATS, OLED_SNAKE, OLED_OFF, _NUM_OLED_MODES, OLED_DELETE };
 
 // Keyboard Information
 extern volatile uint8_t led_numlock;
@@ -28,6 +28,12 @@ void                       draw_default(void);
 void                       draw_encoder(int8_t startX, int8_t startY, bool show_legend);
 void                       draw_stats(void);
 void                       draw_delete(void);
+
+#ifdef ENABLE_SNAKE_MODE
+void draw_snake(void);
+enum SnakeDirections { UP = 1, DOWN = -1, LEFT = 2, RIGHT = -2};
+extern int8_t desired_snake_direction;
+#endif
 
 // Timer for spamming delete
 extern uint16_t delete_timer;

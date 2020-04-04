@@ -17,6 +17,7 @@
         "xstddef": "c",
         "type_traits": "c",
         "utility": "c",
-        "condition_variable": "c"
+        "condition_variable": "c",
+        "*.inc": "c"
     }
 }

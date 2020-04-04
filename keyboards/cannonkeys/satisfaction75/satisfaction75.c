@@ -209,6 +209,27 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     update_key_stats(keycode, record);
 #endif
 
+    
+#ifdef ENABLE_SNAKE_MODE
+    if (oled_mode == OLED_SNAKE && record->event.pressed) {
+        switch (keycode) {
+            case KC_UP:
+                desired_snake_direction = UP;
+                break;
+            case KC_DOWN:
+                desired_snake_direction = DOWN;
+                break;
+            case KC_LEFT:
+                desired_snake_direction = LEFT;
+                break;
+            case KC_RIGHT:
+                desired_snake_direction = RIGHT;
+                break;
+        }
+    }
+#endif
+
+
     if (record->event.pressed) {
         caps_used_as_fn = true;
     }
@@ -356,6 +377,13 @@ void matrix_scan_kb(void) {
 
         return;
     }
+    
+    #ifdef ENABLE_SNAKE_MODE
+    if (oled_mode == OLED_SNAKE) {
+        draw_ui();
+        return;
+    }
+    #endif
 
     if (queue_for_send) {
         oled_sleeping = false;
