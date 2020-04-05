@@ -174,8 +174,7 @@ typedef struct {
 
 GamePos food_pos;
 
-GamePos snake_links[GAME_SIZE];
-// GamePos *snake_links;
+GamePos *snake_links;
 uint16_t num_snake_links = 0;
 
 int8_t current_snake_direction = NONE;
@@ -242,19 +241,15 @@ void add_snake_link(GamePos pos) {
 }
 
 void init_game(void) {
+    free(snake_links);
+    snake_links = malloc((sizeof(int)) * 10);
+    
     game_lost = false;
     snake_step_timer = timer_read();
     current_snake_direction = NONE;
     num_snake_links = 0;
     add_snake_link(get_rand_free_pos());
     food_pos = get_rand_free_pos();
-    
-    
-    // free(snake_links2);
-    // snake_links2 = malloc((sizeof(int)) * 10);
-    
-    // timer_read();
-    // snake_links2[0] = 4;
 }
 
 void draw_snake() {
