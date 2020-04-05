@@ -140,30 +140,28 @@ void           draw_delete() {
 
 #ifdef ENABLE_SNAKE_MODE
 
-// uint8_t game_zoom = 4;
-
-// void change_game_zoom(bool increase) {
-//     if (increase) {
-//         game_zoom = game_zoom << 1;
-//         if (game_zoom > 16) {
-//             game_zoom = 16;
-//         }
-//     } else  {
-//         game_zoom = game_zoom >> 1;
-//         if (game_zoom == 0) {
-//             game_zoom = 1;
-//         }
-//     }
-// }
-
-
-#define GAME_ZOOM 4
+uint8_t zoom_index = 3;
+#define GAME_ZOOM (1 << zoom_index)
 #define GAME_WIDTH (128 / GAME_ZOOM)
 #define GAME_HEIGHT (32 / GAME_ZOOM)
-#define GAME_SIZE (GAME_WIDTH * GAME_HEIGHT)
 
-#define SNAKE_STEP_TIME_MIN 80
-#define GET_SNAKE_STEP_TIME(score) ((SNAKE_STEP_TIME_MIN + (uint8_t)((score < 30 ? (30 - score) : 0) * 2.2f)) * (GAME_ZOOM / 4))
+void change_game_zoom(bool increase) {
+    if (increase && zoom_index < 4) {
+        zoom_index++;
+    } else if (!increase && zoom_index > 0) {
+        zoom_index--;
+    }
+    
+    init_game();
+}
+#define SNAKE_STEP_TIME_MIN 100
+#define SNAKE_STEP_ZOOM_SCALE ( \
+    zoom_index == 0 ? 0.4f : \
+    zoom_index == 1 ? 0.6f : \
+    zoom_index == 3 ? 1.4f : \
+    zoom_index == 4 ? 1.7f : 1.0f)
+#define SNAKE_STEP_LENGTH_ADDITION(score) ((score < 30 ? (30 - score) : 0) * 2.2f)
+#define GET_SNAKE_STEP_TIME(score) ((uint16_t)((SNAKE_STEP_TIME_MIN + SNAKE_STEP_LENGTH_ADDITION(score)) * SNAKE_STEP_ZOOM_SCALE))
 
 uint16_t snake_step_timer = 0;
 
@@ -209,8 +207,8 @@ GamePos get_rand_free_pos(void) {
     
     do
     {
-        rand_pos.x = timer_read() % GAME_WIDTH;
-        rand_pos.y = timer_read() % GAME_HEIGHT;
+        rand_pos.x = rand() % GAME_WIDTH;
+        rand_pos.y = rand() % GAME_HEIGHT;
     } while (is_pos_snake(rand_pos));
     
     return rand_pos;
@@ -247,6 +245,7 @@ void init_game(void) {
     game_lost = false;
     snake_step_timer = timer_read();
     current_snake_direction = NONE;
+    desired_snake_direction = NONE;
     num_snake_links = 0;
     add_snake_link(get_rand_free_pos());
     food_pos = get_rand_free_pos();

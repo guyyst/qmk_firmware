@@ -209,7 +209,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     update_key_stats(keycode, record);
 #endif
 
-    
 #ifdef ENABLE_SNAKE_MODE
     if (oled_mode == OLED_SNAKE && record->event.pressed) {
         switch (keycode) {
@@ -225,10 +224,12 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             case KC_RIGHT:
                 desired_snake_direction = RIGHT;
                 break;
+            case ENC_PRESS:
+                init_game();
+                break;
         }
     }
 #endif
-
 
     if (record->event.pressed) {
         caps_used_as_fn = true;
@@ -327,6 +328,14 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 }
 
 void encoder_update_kb(uint8_t index, bool clockwise) {
+    
+#ifdef ENABLE_SNAKE_MODE
+    if (oled_mode == OLED_SNAKE) {
+        change_game_zoom(clockwise);
+        return;
+    }
+#endif
+    
     queue_for_send = true;
     if (index == 0) {
         if (get_mods() & MOD_MASK_GUI) {
@@ -378,12 +387,12 @@ void matrix_scan_kb(void) {
         return;
     }
     
-    #ifdef ENABLE_SNAKE_MODE
+#ifdef ENABLE_SNAKE_MODE
     if (oled_mode == OLED_SNAKE) {
         draw_ui();
         return;
     }
-    #endif
+#endif
 
     if (queue_for_send) {
         oled_sleeping = false;
