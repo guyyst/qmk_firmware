@@ -214,19 +214,19 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         switch (keycode) {
             case KC_UP:
                 desired_snake_direction = UP;
-                break;
+                return false;
             case KC_DOWN:
                 desired_snake_direction = DOWN;
-                break;
+                return false;
             case KC_LEFT:
                 desired_snake_direction = LEFT;
-                break;
+                return false;
             case KC_RIGHT:
                 desired_snake_direction = RIGHT;
-                break;
+                return false;
             case ENC_PRESS:
                 init_game();
-                break;
+                return false;
         }
     }
 #endif
