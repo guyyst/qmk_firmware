@@ -46,7 +46,16 @@ enum encoder_modes {
 
 enum custom_encoder_behavior { ENC_CUSTOM_CW = 0, ENC_CUSTOM_CCW, ENC_CUSTOM_PRESS };
 
+#ifdef ENABLE_SNAKE_MODE
+enum oled_modes { OLED_DEFAULT, OLED_TIME, OLED_SNAKE, OLED_OFF, _NUM_OLED_MODES };
+void draw_snake(void);
+void init_game(void);
+void change_game_zoom(bool increase);
+enum SnakeDirections { NONE = 0, UP = 1, DOWN = -1, LEFT = 2, RIGHT = -2};
+extern int8_t desired_snake_direction;
+#else
 enum oled_modes { OLED_DEFAULT, OLED_TIME, OLED_OFF, _NUM_OLED_MODES };
+#endif
 
 // Keyboard Information
 extern volatile uint8_t led_numlock;
