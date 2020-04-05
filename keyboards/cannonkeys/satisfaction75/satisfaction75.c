@@ -310,9 +310,31 @@ uint32_t layer_state_set_kb(uint32_t state) {
     return state;
 }
 
-bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+bool process_record_kb(uint16_t keycode, keyrecord_t *record) {    
 #ifdef ENABLE_STAT_TRACKING
     update_key_stats(keycode, record);
+#endif
+
+#ifdef ENABLE_SNAKE_MODE
+    if (oled_mode == OLED_SNAKE && record->event.pressed) {
+        switch (keycode) {
+            case KC_UP:
+                desired_snake_direction = UP;
+                return false;
+            case KC_DOWN:
+                desired_snake_direction = DOWN;
+                return false;
+            case KC_LEFT:
+                desired_snake_direction = LEFT;
+                return false;
+            case KC_RIGHT:
+                desired_snake_direction = RIGHT;
+                return false;
+            case ENC_PRESS:
+                init_game();
+                return false;
+        }
+    }
 #endif
 
     queue_for_send = true;
@@ -374,6 +396,14 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 }
 
 void encoder_update_kb(uint8_t index, bool clockwise) {
+#ifdef ENABLE_SNAKE_MODE
+    if (oled_mode == OLED_SNAKE) {
+        change_game_zoom(clockwise);
+        return;
+    }
+#endif
+
+    
     encoder_value  = (encoder_value + (clockwise ? 1 : -1)) % 64;
     queue_for_send = true;
     if (index == 0) {
@@ -464,6 +494,13 @@ void matrix_scan_kb(void) {
         }
     }
 #ifdef QWIIC_MICRO_OLED_ENABLE
+#ifdef ENABLE_SNAKE_MODE
+    if (oled_mode == OLED_SNAKE) {
+        draw_ui();
+        return;
+    }
+#endif
+
     if (queue_for_send && oled_mode != OLED_OFF) {
         oled_sleeping = false;
         read_host_led_state();

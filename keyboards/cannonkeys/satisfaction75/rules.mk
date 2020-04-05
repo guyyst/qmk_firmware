@@ -32,3 +32,7 @@ OPT_DEFS += -DCORTEX_ENABLE_WFI_IDLE=TRUE
 
 # Enable another OLED mode to track key statistics and display a key history
 OPT_DEFS += -DENABLE_STAT_TRACKING
+
+
+# Enable snake mode c:
+OPT_DEFS += -DENABLE_SNAKE_MODE
