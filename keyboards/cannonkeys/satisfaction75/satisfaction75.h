@@ -31,6 +31,8 @@ void                       draw_delete(void);
 
 #ifdef ENABLE_SNAKE_MODE
 void draw_snake(void);
+void init_game(void);
+void change_game_zoom(void);
 enum SnakeDirections { NONE = 0, UP = 1, DOWN = -1, LEFT = 2, RIGHT = -2};
 extern int8_t desired_snake_direction;
 #endif

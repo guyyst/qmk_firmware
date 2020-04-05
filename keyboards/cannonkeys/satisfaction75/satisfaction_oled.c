@@ -140,14 +140,32 @@ void           draw_delete() {
 
 #ifdef ENABLE_SNAKE_MODE
 
-#define SNAKE_STEP_TIME_MIN 80
-#define GET_SNAKE_STEP_TIME(score) (SNAKE_STEP_TIME_MIN + (uint8_t)((30 - score) * 2.2f))
-uint16_t snake_step_timer = 0;
+// uint8_t game_zoom = 4;
+
+// void change_game_zoom(bool increase) {
+//     if (increase) {
+//         game_zoom = game_zoom << 1;
+//         if (game_zoom > 16) {
+//             game_zoom = 16;
+//         }
+//     } else  {
+//         game_zoom = game_zoom >> 1;
+//         if (game_zoom == 0) {
+//             game_zoom = 1;
+//         }
+//     }
+// }
+
 
 #define GAME_ZOOM 4
 #define GAME_WIDTH (128 / GAME_ZOOM)
 #define GAME_HEIGHT (32 / GAME_ZOOM)
 #define GAME_SIZE (GAME_WIDTH * GAME_HEIGHT)
+
+#define SNAKE_STEP_TIME_MIN 80
+#define GET_SNAKE_STEP_TIME(score) ((SNAKE_STEP_TIME_MIN + (uint8_t)((score < 30 ? (30 - score) : 0) * 2.2f)) * (GAME_ZOOM / 4))
+
+uint16_t snake_step_timer = 0;
 
 typedef struct {
     uint8_t x;
@@ -157,6 +175,7 @@ typedef struct {
 GamePos food_pos;
 
 GamePos snake_links[GAME_SIZE];
+// GamePos *snake_links;
 uint16_t num_snake_links = 0;
 
 int8_t current_snake_direction = NONE;
@@ -229,6 +248,13 @@ void init_game(void) {
     num_snake_links = 0;
     add_snake_link(get_rand_free_pos());
     food_pos = get_rand_free_pos();
+    
+    
+    // free(snake_links2);
+    // snake_links2 = malloc((sizeof(int)) * 10);
+    
+    // timer_read();
+    // snake_links2[0] = 4;
 }
 
 void draw_snake() {
@@ -241,7 +267,7 @@ void draw_snake() {
         sprintf(score_str, "SCORE: %u", num_snake_links);
         draw_string(24, 12, score_str, PIXEL_ON, NORM, 1);
         
-        if (desired_snake_direction != NONE) {
+        if (desired_snake_direction != NONE && timer_elapsed(snake_step_timer) > 400) {
             init_game();
         }
     } else if (timer_elapsed(snake_step_timer) > GET_SNAKE_STEP_TIME(num_snake_links)) {
@@ -257,27 +283,26 @@ void draw_snake() {
         if (current_snake_direction != NONE) {
             GamePos next_pos = get_rel_pos(snake_links[0], current_snake_direction);
         
-            if (is_pos_snake(next_pos)) {
-                game_lost = true;
-            }
-            
             bool ate_food = (next_pos.x == food_pos.x && next_pos.y == food_pos.y);
             
             if (ate_food) {
                 num_snake_links++;
             }
-            
+                
             for (size_t i = num_snake_links - 1; i > 0; i--) {
                 snake_links[i] = snake_links[i - 1];
             }
-            
+        
+            if (is_pos_snake(next_pos)) {
+                game_lost = true;
+            }
+        
             snake_links[0] = next_pos;
             
             if (ate_food) {
                 food_pos = get_rand_free_pos();
             } 
         }
-        
     }
     
     draw_game();
