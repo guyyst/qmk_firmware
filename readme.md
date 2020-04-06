@@ -1,6 +1,6 @@
-### satisfaction 75 Snake mode
+### Satisfaction 75 Snake Mode
 This branch adds another OLED mode to the Satisfaction 75 to play Snake c:
-You can download a VIA enabled .bin that includes the Snake mode if you don't want to compile it yourself [here.](public_bin/sat75_snake_via.bin)
+If you don't want to compile it yourself [here's](public_bin/sat75_snake_via.bin) a link to the VIA enabled binary that includes the Snake mode.
 
 
 # Quantum Mechanical Keyboard Firmware
