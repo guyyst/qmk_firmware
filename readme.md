@@ -1,7 +1,13 @@
-## Satisfaction 75 Stat Tracker Branch
-###### This branch includes modifications to the [`keyboards/cannonkeys/satisfaction75`](https://github.com/guyyst/qmk_firmware/tree/sat75-stat-tracker/keyboards/cannonkeys/satisfaction75) folder adding another OLED mode that shows statistics about key presses as well as a key history. Due to current QMK limitations this could not be contained in a separate keymap and required changes to the original Sat75 code.
+## Satisfaction 75 Stat Tracker Snake Branch
+This branch is essentially just a merge between my [Stat Tracker](https://github.com/guyyst/qmk_firmware/tree/sat75-stat-tracker) and [Snake](https://github.com/guyyst/qmk_firmware/tree/sat75-snake) branches.
+
+[Here's](public_bin/sat75_stat_tracker_and_snake_via.bin) a link to a via enabled binary that includes both the stat tracker and snake mode. 
 
 ![Sat75Gif](https://media.giphy.com/media/UpIe10chGT3dd3KU4b/giphy.gif)
+
+### satisfaction 75 Snake mode
+This branch adds another OLED mode to the Satisfaction 75 to play Snake c:
+You can download a VIA enabled .bin that includes the Snake mode if you don't want to compile it yourself [here.](public_bin/sat75_snake_via.bin)
 
 
 # Quantum Mechanical Keyboard Firmware
