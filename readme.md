@@ -1,5 +1,6 @@
 ### Satisfaction 75 Snake Mode
 This branch adds another OLED mode to the Satisfaction 75 to play Snake c:
+
 If you don't want to compile it yourself [here's](public_bin/sat75_snake_via.bin) a link to the VIA enabled binary that includes the Snake mode.
 
 
