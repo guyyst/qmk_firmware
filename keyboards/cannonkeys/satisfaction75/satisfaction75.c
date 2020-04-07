@@ -341,11 +341,11 @@ void encoder_update_kb(uint8_t index, bool clockwise) {
         if (get_mods() & MOD_MASK_GUI) {
             // Make Win+Encoder send Win+Plus/Minus
             if (clockwise) {
-                register_code(KC_KP_PLUS);
-                unregister_code(KC_KP_PLUS);
+                register_code(KC_DOT);
+                unregister_code(KC_DOT);
             } else {
-                register_code(KC_KP_MINUS);
-                unregister_code(KC_KP_MINUS);
+                register_code(KC_COMMA);
+                unregister_code(KC_COMMA);
             }
         } else if (get_mods() & MOD_MASK_CTRL) {
             if (clockwise) {
