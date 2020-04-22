@@ -34,3 +34,8 @@ OPT_DEFS += -DENABLE_STAT_TRACKING
 
 # Enable snake mode c:
 OPT_DEFS += -DENABLE_SNAKE_MODE
+
+
+
+# Enable Game of Life
+OPT_DEFS += -DENABLE_GAME_OF_LIFE

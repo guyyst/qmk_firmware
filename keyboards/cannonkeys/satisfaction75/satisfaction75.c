@@ -331,7 +331,7 @@ void encoder_update_kb(uint8_t index, bool clockwise) {
     
 #ifdef ENABLE_SNAKE_MODE
     if (oled_mode == OLED_SNAKE) {
-        change_game_zoom(clockwise);
+        change_snake_zoom(clockwise);
         return;
     }
 #endif
@@ -389,6 +389,13 @@ void matrix_scan_kb(void) {
     
 #ifdef ENABLE_SNAKE_MODE
     if (oled_mode == OLED_SNAKE) {
+        draw_ui();
+        return;
+    }
+#endif
+
+#ifdef ENABLE_GAME_OF_LIFE
+    if (oled_mode == OLED_GOF) {
         draw_ui();
         return;
     }

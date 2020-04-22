@@ -18,6 +18,7 @@
         "type_traits": "c",
         "utility": "c",
         "condition_variable": "c",
-        "*.inc": "c"
+        "*.inc": "c",
+        "array": "c"
     }
 }

@@ -21,6 +21,11 @@ __attribute__((weak)) void draw_ui() {
             draw_snake();
             break;
 #endif
+#ifdef ENABLE_SNAKE_MODE
+        case OLED_GOF:
+            draw_game_of_life();
+            break;
+#endif
         case OLED_DELETE:
             draw_delete();
             break;
@@ -203,7 +208,7 @@ uint8_t zoom_index = 3;
 #define GAME_WIDTH (128 / GAME_ZOOM)
 #define GAME_HEIGHT (32 / GAME_ZOOM)
 
-void change_game_zoom(bool increase) {
+void change_snake_zoom(bool increase) {
     if (increase && zoom_index < 4) {
         zoom_index++;
     } else if (!increase && zoom_index > 0) {
@@ -212,6 +217,7 @@ void change_game_zoom(bool increase) {
 
     init_game();
 }
+
 #define SNAKE_STEP_TIME_MIN 100
 #define SNAKE_STEP_ZOOM_SCALE ( \
     zoom_index == 0 ? 0.4f : \
@@ -397,3 +403,205 @@ void draw_snake() {
 }
 
 #endif
+
+#ifdef ENABLE_GAME_OF_LIFE
+
+// void change_gof_zoom(bool increase) {
+//     if (increase && zoom_index < 4) {
+//         zoom_index++;
+//     } else if (!increase && zoom_index > 0) {
+//         zoom_index--;
+//     }
+
+//     init_game();
+// }
+
+#    define WIDTH 128
+#    define HEIGHT 32
+#    define PIXEL_ARRAY_SIZE (WIDTH * HEIGHT / 8)
+
+uint8_t *gof_array_cur;
+uint8_t *gof_array_next;
+
+uint16_t gof_generation = 0;
+
+uint16_t gof_gen_timer = 0;
+
+
+bool gof_get_pixel_state(uint8_t *array, uint8_t col, uint8_t row) {
+    uint16_t pixel_pos = row * WIDTH + col;
+
+    uint16_t byte_pos = pixel_pos / 8;
+    uint8_t  bit_pos  = 7 - (pixel_pos % 8);
+
+    return array[byte_pos] & (1 << bit_pos);
+}
+
+void gof_set_pixel_state(uint8_t *array, uint8_t col, uint8_t row, bool state) {
+    uint16_t pixel_pos = row * WIDTH + col;
+
+    uint16_t byte_pos = pixel_pos / 8;
+    uint8_t  bit_pos  = 7 - (pixel_pos % 8);
+
+    if (state) {
+        array[byte_pos] |= (1 << bit_pos);
+    } else {
+        array[byte_pos] &= ~(1 << bit_pos);
+    }
+}
+
+void gof_draw_current_array(void) {
+    for (uint8_t row = 0; row < HEIGHT; row++) {
+        for (uint8_t col = 0; col < WIDTH; col++) {
+            if (gof_get_pixel_state(gof_array_cur, col, row)) {
+                draw_pixel(col, row, PIXEL_ON, NORM);
+            }
+        }
+    }
+}
+
+void gof_fill_random(void) {
+    for (uint8_t row = 0; row < HEIGHT; row++) {
+        for (uint8_t col = 0; col < WIDTH; col++) {
+            if (rand() % 7 == 0) {
+                gof_set_pixel_state(gof_array_cur, col, row, true);
+            }
+        }
+    }
+}
+
+uint8_t gof_mod(uint8_t number, uint8_t mod) {
+    return (number + mod) % mod;
+}
+
+void gof_step(void) {
+
+    for (uint8_t row = 0; row < HEIGHT; row++) {
+        for (uint8_t col = 0; col < WIDTH; col++) {
+            
+            uint8_t live_neighbors = 0;
+
+            for (int8_t y = -1; y <= 1; y++) {
+                for (int8_t x = -1; x <= 1; x++) {
+
+                    if (y == 0 && x == 0) {
+                        continue;
+                    }
+                    
+                    live_neighbors += gof_get_pixel_state(gof_array_cur, gof_mod(col + x, WIDTH), gof_mod(row + y, HEIGHT));
+                }
+            }
+
+            bool cell_state = gof_get_pixel_state(gof_array_cur, col, row);
+
+            if ((cell_state && (live_neighbors == 2 || live_neighbors == 3)) || (!cell_state && live_neighbors == 3)) {
+                gof_set_pixel_state(gof_array_next, col, row, true);
+            }
+            else {
+                gof_set_pixel_state(gof_array_next, col, row, false);
+            }
+        }
+    }
+
+    uint8_t *gof_array_temp = gof_array_cur;
+    gof_array_cur = gof_array_next;
+    gof_array_next = gof_array_temp;
+
+    ++gof_generation;
+}
+
+void gof_init(void) {
+
+    gof_generation = 1;
+
+    free(gof_array_cur);
+    free(gof_array_next);
+
+    gof_array_cur = calloc(PIXEL_ARRAY_SIZE, 1);
+    gof_array_next = calloc(PIXEL_ARRAY_SIZE, 1);
+
+    gof_gen_timer = timer_read();
+}   
+
+void draw_game_of_life() {
+    if (gof_generation == 0) {
+        gof_init();
+     
+        gof_set_pixel_state(gof_array_cur, 40, 10, true);
+        gof_set_pixel_state(gof_array_cur, 41, 10, true);
+        gof_set_pixel_state(gof_array_cur, 42, 10, true);
+        gof_set_pixel_state(gof_array_cur, 43, 10, true);
+        gof_set_pixel_state(gof_array_cur, 44, 10, true);
+        gof_set_pixel_state(gof_array_cur, 45, 10, true);
+        gof_set_pixel_state(gof_array_cur, 46, 10, true);
+        gof_set_pixel_state(gof_array_cur, 47, 10, true);
+        gof_set_pixel_state(gof_array_cur, 48, 10, true);
+        gof_set_pixel_state(gof_array_cur, 49, 10, true);
+        gof_set_pixel_state(gof_array_cur, 50, 10, true);
+        gof_set_pixel_state(gof_array_cur, 51, 10, true);
+        gof_set_pixel_state(gof_array_cur, 52, 10, true);
+        gof_set_pixel_state(gof_array_cur, 53, 10, true);
+        gof_set_pixel_state(gof_array_cur, 54, 10, true);
+        gof_set_pixel_state(gof_array_cur, 55, 10, true);
+        gof_set_pixel_state(gof_array_cur, 56, 10, true);
+        gof_set_pixel_state(gof_array_cur, 57, 10, true);
+        gof_set_pixel_state(gof_array_cur, 58, 10, true);
+        gof_set_pixel_state(gof_array_cur, 59, 10, true);
+        gof_set_pixel_state(gof_array_cur, 60, 10, true);
+        gof_set_pixel_state(gof_array_cur, 61, 10, true);
+        gof_set_pixel_state(gof_array_cur, 62, 10, true);
+        gof_set_pixel_state(gof_array_cur, 63, 10, true);
+        gof_set_pixel_state(gof_array_cur, 64, 10, true);
+        gof_set_pixel_state(gof_array_cur, 65, 10, true);
+        gof_set_pixel_state(gof_array_cur, 66, 10, true);
+        gof_set_pixel_state(gof_array_cur, 67, 10, true);
+        gof_set_pixel_state(gof_array_cur, 68, 10, true);
+        gof_set_pixel_state(gof_array_cur, 69, 10, true);
+        gof_set_pixel_state(gof_array_cur, 70, 10, true);
+
+
+        gof_set_pixel_state(gof_array_cur, 40, 20, true);
+        gof_set_pixel_state(gof_array_cur, 41, 20, true);
+        gof_set_pixel_state(gof_array_cur, 42, 20, true);
+        gof_set_pixel_state(gof_array_cur, 43, 20, true);
+        gof_set_pixel_state(gof_array_cur, 44, 20, true);
+        gof_set_pixel_state(gof_array_cur, 45, 20, true);
+        gof_set_pixel_state(gof_array_cur, 46, 20, true);
+        gof_set_pixel_state(gof_array_cur, 47, 20, true);
+        gof_set_pixel_state(gof_array_cur, 48, 20, true);
+        gof_set_pixel_state(gof_array_cur, 49, 20, true);
+        gof_set_pixel_state(gof_array_cur, 50, 20, true);
+        gof_set_pixel_state(gof_array_cur, 51, 20, true);
+        gof_set_pixel_state(gof_array_cur, 52, 20, true);
+        gof_set_pixel_state(gof_array_cur, 53, 20, true);
+        gof_set_pixel_state(gof_array_cur, 54, 20, true);
+        gof_set_pixel_state(gof_array_cur, 55, 20, true);
+        gof_set_pixel_state(gof_array_cur, 56, 20, true);
+        gof_set_pixel_state(gof_array_cur, 57, 20, true);
+        gof_set_pixel_state(gof_array_cur, 58, 20, true);
+        gof_set_pixel_state(gof_array_cur, 59, 20, true);
+        gof_set_pixel_state(gof_array_cur, 60, 20, true);
+        gof_set_pixel_state(gof_array_cur, 61, 20, true);
+        gof_set_pixel_state(gof_array_cur, 62, 20, true);
+        gof_set_pixel_state(gof_array_cur, 63, 20, true);
+        gof_set_pixel_state(gof_array_cur, 64, 20, true);
+        gof_set_pixel_state(gof_array_cur, 65, 20, true);
+        gof_set_pixel_state(gof_array_cur, 66, 20, true);
+        gof_set_pixel_state(gof_array_cur, 67, 20, true);
+        gof_set_pixel_state(gof_array_cur, 68, 20, true);
+        gof_set_pixel_state(gof_array_cur, 69, 20, true);
+        gof_set_pixel_state(gof_array_cur, 70, 20, true);
+        // gof_fill_random();
+    }
+
+    if (timer_elapsed(gof_gen_timer) > 1) {
+        gof_gen_timer = timer_read();
+
+        gof_step();
+        gof_draw_current_array();
+        send_buffer();
+    }
+}
+
+#endif
+
