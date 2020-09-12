@@ -40,6 +40,11 @@ bool    oled_sleeping  = false;
 
 uint16_t delete_timer = 0;
 
+// For keyboards that don't have a volume knob
+// int8_t V_DIRECTION = 0;
+// uint16_t V_DIRECTION_START_TIMER = 0;
+// uint16_t V_DIRECTION_REPEAT_TIMER = 0;
+
 void read_host_led_state(void) {
     uint8_t leds = host_keyboard_leds();
     if (leds & (1 << USB_LED_NUM_LOCK)) {
@@ -237,18 +242,43 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
     queue_for_send = true;
     switch (keycode) {
-        case KC_LEFT:
-        case KC_RIGHT: {
-            if (layer == 1) {
+        // For keyboards that don't have a volume knob
+        // case KC_F11:
+        // case KC_F12:
+        //     if (layer == 1) {
+
+        //         if (record->event.pressed) {
+        //             V_DIRECTION = keycode == KC_F11 ? -1 : 1;
+        //             tap_media_key(keycode == KC_F11 ? KC_VOLD : KC_VOLU);
+        //             V_DIRECTION_START_TIMER = timer_read();
+        //         } else if ((keycode == KC_F11 && V_DIRECTION == -1) || (keycode == KC_F12 && V_DIRECTION == 1)) {
+        //             V_DIRECTION = 0;
+        //         }
                 
-                register_code(keycode == KC_LEFT ? KC_HOME : KC_END);
-                unregister_code(keycode == KC_LEFT ? KC_HOME : KC_END);
+        //         return false;
+        //     }
+        //     else {
 
-                return false;
-            }
+        //         if (record->event.pressed) {
+        //             register_code(keycode == KC_F11 ? KC_VOLD : KC_VOLU);
+        //         } else {
+        //             unregister_code(keycode == KC_F11 ? KC_VOLD : KC_VOLU);
+        //         }
+        //     }
+            
+        //     break;
+        // case KC_LEFT:
+        // case KC_RIGHT: {
+        //     if (layer == 1) {
+                
+        //         register_code(keycode == KC_LEFT ? KC_HOME : KC_END);
+        //         unregister_code(keycode == KC_LEFT ? KC_HOME : KC_END);
 
-            break;
-        }
+        //         return false;
+        //     }
+
+        //     break;
+        // }
         case KC_CAPS:
             if (record->event.pressed) {
                 layer_on(1);
@@ -339,13 +369,13 @@ void encoder_update_kb(uint8_t index, bool clockwise) {
     queue_for_send = true;
     if (index == 0) {
         if (get_mods() & MOD_MASK_GUI) {
-            // Make Win+Encoder send Win+Plus/Minus
+            // Make Win+Encoder send F13/F14
             if (clockwise) {
-                register_code(KC_RBRACKET);
-                unregister_code(KC_RBRACKET);
+                register_code(KC_F13);
+                unregister_code(KC_F13);
             } else {
-                register_code(KC_LBRACKET);
-                unregister_code(KC_LBRACKET);
+                register_code(KC_F14);
+                unregister_code(KC_F14);
             }
         } else if (get_mods() & MOD_MASK_CTRL) {
             if (clockwise) {
@@ -386,6 +416,13 @@ void matrix_scan_kb(void) {
 
         return;
     }
+
+    // For keyboards that don't have a volume knob
+    // if (V_DIRECTION != 0 && timer_elapsed(V_DIRECTION_START_TIMER) > 100 && timer_elapsed(V_DIRECTION_REPEAT_TIMER) > 15) {
+    //     tap_media_key(V_DIRECTION == 1 ? KC_VOLU : KC_VOLD);
+
+    //     V_DIRECTION_REPEAT_TIMER = timer_read();
+    // }
     
 #ifdef ENABLE_SNAKE_MODE
     if (oled_mode == OLED_SNAKE) {
