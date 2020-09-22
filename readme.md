@@ -1,11 +1,7 @@
 ## Satisfaction 75 Stat Tracker Snake Branch
 This branch is essentially just a merge between my [Stat Tracker](https://github.com/guyyst/qmk_firmware/tree/sat75-stat-tracker) and [Snake](https://github.com/guyyst/qmk_firmware/tree/sat75-snake) branches.
 
-[Here's](public_bin/sat75_stat_tracker_and_snake_via.bin) a link to a via enabled binary that includes both the stat tracker and snake mode. 
-
-### satisfaction 75 Snake mode
-This branch adds another OLED mode to the Satisfaction 75 to play Snake c:
-You can download a VIA enabled .bin that includes the Snake mode if you don't want to compile it yourself [here.](public_bin/sat75_snake_via.bin)
+[Here's](public_bin/sat75_stat_tracker_and_snake_via.bin) a link to a via enabled binary that includes both the stat tracker and snake mode.
 
 
 # Quantum Mechanical Keyboard Firmware
