@@ -267,18 +267,38 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         //     }
             
         //     break;
-        // case KC_LEFT:
-        // case KC_RIGHT: {
-        //     if (layer == 1) {
+        case KC_UP:
+        case KC_DOWN:
+        case KC_LEFT:
+        case KC_RIGHT: {
+            if (layer == 1) {
+
+                uint16_t nav_key;
+
+                switch (keycode)
+                {
+                    case KC_UP:
+                        nav_key = KC_PGUP;
+                        break;
+                    case KC_DOWN:
+                        nav_key = KC_PGDOWN;
+                        break;
+                    case KC_LEFT:
+                        nav_key = KC_HOME;
+                        break;
+                    case KC_RIGHT:
+                        nav_key = KC_END;
+                        break;
+                }
                 
-        //         register_code(keycode == KC_LEFT ? KC_HOME : KC_END);
-        //         unregister_code(keycode == KC_LEFT ? KC_HOME : KC_END);
+                register_code(nav_key);
+                unregister_code(nav_key);
 
-        //         return false;
-        //     }
+                return false;
+            }
 
-        //     break;
-        // }
+            break;
+        }
         case KC_CAPS:
             if (record->event.pressed) {
                 layer_on(1);
@@ -450,10 +470,12 @@ void matrix_scan_kb(void) {
         oled_sleeping = true;
     }
 
-    // If both next_track and prev_track have been pressed in the last milliseconds, send pause_track instead.
-    if (media_next_track_timer != 0 && media_prev_track_timer != 0 && timer_elapsed(media_next_track_timer) < MEDIA_KEY_PAUSE_TIMEOUT && timer_elapsed(media_prev_track_timer) < MEDIA_KEY_PAUSE_TIMEOUT) {
-        tap_media_key(KC_MEDIA_PLAY_PAUSE);
-        media_next_track_timer = 0;
-        media_prev_track_timer = 0;
-    }
+
+    // Not used since I switched from two to three keys.
+    // // If both next_track and prev_track have been pressed in the last milliseconds, send pause_track instead.
+    // if (media_next_track_timer != 0 && media_prev_track_timer != 0 && timer_elapsed(media_next_track_timer) < MEDIA_KEY_PAUSE_TIMEOUT && timer_elapsed(media_prev_track_timer) < MEDIA_KEY_PAUSE_TIMEOUT) {
+    //     tap_media_key(KC_MEDIA_PLAY_PAUSE);
+    //     media_next_track_timer = 0;
+    //     media_prev_track_timer = 0;
+    // }
 }
